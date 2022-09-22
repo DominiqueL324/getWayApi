@@ -47,7 +47,7 @@ class ClientApi(APIView):
         if role == -1:
             return JsonResponse({"status":"No roles"},status=401) 
 
-        if role['user']['group'] != "Administrateur" and role['user']['group'] != "Agent":
+        if role['user']['group'] != "Administrateur" and role['user']['group'] != "Agent secteur":
             return JsonResponse({"status":"insufficient privileges"},status=401)
         
         final_=[]
@@ -71,6 +71,7 @@ class ClientApi(APIView):
                 'code_client': openapi.Schema(type=openapi.TYPE_STRING),
                 'adresse':openapi.Schema(type=openapi.TYPE_STRING),
                 'telephone':openapi.Schema(type=openapi.TYPE_STRING),
+                'type':openapi.Schema(type=openapi.TYPE_STRING),
             },
          ),
         manual_parameters=[token_param])
@@ -92,7 +93,7 @@ class ClientApi(APIView):
         if role == -1:
             return JsonResponse({"status":"No roles"},status=401) 
 
-        if role['user']['group'] != "Administrateur" and role['user']['group'] != "Agent":
+        if role['user']['group'] != "Administrateur" and role['user']['group'] != "Agent secteur":
             return JsonResponse({"status":"insufficient privileges"},status=401)
 
         try:
@@ -124,8 +125,8 @@ class ClientDetailsAPI(APIView):
         if role == -1:
             return JsonResponse({"status":"No roles"},status=401) 
 
-        if role['user']['group'] != "Administrateur" and role['user']['group'] != "Agent":
-            if role['user']['group'] == "Client" and int(role['id'])==int(id):
+        if role['user']['group'] != "Administrateur" and role['user']['group'] != "Agent secteur":
+            if (role['user']['group'] == "Client pro" or role['user']['group'] == "Client particulier") and int(role['id'])==int(id):
                 url_ = URLCLIENT+str(id)
             else:
                 return JsonResponse({"status":"insufficient privileges"},status=401)
@@ -150,6 +151,7 @@ class ClientDetailsAPI(APIView):
                 'login': openapi.Schema(type=openapi.TYPE_STRING),
                 'mdp': openapi.Schema(type=openapi.TYPE_STRING),
                 'is_active': openapi.Schema(type=openapi.TYPE_BOOLEAN),
+                'type':openapi.Schema(type=openapi.TYPE_INTEGER),
                 'adresse': openapi.Schema(type=openapi.TYPE_STRING),
                 'code_client': openapi.Schema(type=openapi.TYPE_STRING),
                 'nom_complet_comptable' : openapi.Schema(type=openapi.TYPE_STRING),
@@ -198,7 +200,7 @@ class ClientDetailsAPI(APIView):
 
         #controle des roles 
         role = checkRole(token)
-        if role['user']['group'] != "Administrateur" and role['user']['group'] != "Agent":
+        if role['user']['group'] != "Administrateur" and role['user']['group'] != "Agent secteur":
             if role['user']['group'] == "Client" and int(role['id'])==int(id):
                 url_ = URLCLIENT+str(id)
             else:
@@ -228,7 +230,7 @@ class ClientDetailsAPI(APIView):
 
         #controle des roles 
         role = checkRole(token)
-        if role['user']['group'] != "Administrateur" and role['user']['group'] != "Agent":
+        if role['user']['group'] != "Administrateur" and role['user']['group'] != "Agent secteur":
             if role['user']['group'] == "Client" and int(role['id'])==int(id):
                 url_ = URLCLIENT+str(id)
             else:

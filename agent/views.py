@@ -46,7 +46,7 @@ class AgentApi(APIView):
         if role == -1:
             return JsonResponse({"status":"No roles"},status=401) 
 
-        if role['user']['group'] != "Administrateur" and role['user']['group'] != "Agent":
+        if role['user']['group'] != "Administrateur" and role['user']['group'] != "Agent secteur":
             return JsonResponse({"status":"insufficient privileges"},status=401)
         
         try:
@@ -67,6 +67,7 @@ class AgentApi(APIView):
                 'mdp': openapi.Schema(type=openapi.TYPE_STRING),
                 'adresse': openapi.Schema(type=openapi.TYPE_STRING),
                 'trigramme': openapi.Schema(type=openapi.TYPE_STRING),
+                'role':openapi.Schema(type=openapi.TYPE_INTEGER),
             },
          ),
         manual_parameters=[token_param])
@@ -88,7 +89,7 @@ class AgentApi(APIView):
         if role == -1:
             return JsonResponse({"status":"No roles"},status=401) 
 
-        if role['user']['group'] != "Administrateur" and role['user']['group'] != "Agent":
+        if role['user']['group'] != "Administrateur" and role['user']['group'] != "Agent secteur":
             return JsonResponse({"status":"insufficient privileges"},status=401)
         try:
             agents = requests.post(URLAGENT,headers={"Authorization":"Bearer "+token},data=self.request.data).json() 
@@ -119,7 +120,7 @@ class AgentDetailsAPI(APIView):
         if role == -1:
             return JsonResponse({"status":"No roles"},status=401) 
 
-        if role['user']['group'] != "Administrateur" and role['user']['group'] != "Agent":
+        if role['user']['group'] != "Administrateur" and role['user']['group'] != "Agent secteur":
             return JsonResponse({"status":"insufficient privileges"},status=401)
 
         url_ = URLAGENT+str(id)
@@ -143,6 +144,7 @@ class AgentDetailsAPI(APIView):
                 'adresse': openapi.Schema(type=openapi.TYPE_STRING),
                 'trigramme': openapi.Schema(type=openapi.TYPE_STRING),
                 'is_active': openapi.Schema(type=openapi.TYPE_BOOLEAN),
+                'role':openapi.Schema(type=openapi.TYPE_INTEGER),
             },
          ),manual_parameters=[token_param])
     def put(self,request,id):
@@ -162,7 +164,7 @@ class AgentDetailsAPI(APIView):
         if role == -1:
             return JsonResponse({"status":"No roles"},status=401) 
 
-        if role['user']['group'] != "Administrateur" and role['user']['group'] != "Agent":
+        if role['user']['group'] != "Administrateur" and role['user']['group'] != "Agent secteur" and role['user']['group'] != "Agent constat":
             return JsonResponse({"status":"insufficient privileges"},status=401)
 
         try:
@@ -189,7 +191,7 @@ class AgentDetailsAPI(APIView):
         if role == -1:
             return JsonResponse({"status":"No roles"},status=401) 
 
-        if role['user']['group'] != "Administrateur" and role['user']['group'] != "Agent":
+        if role['user']['group'] != "Administrateur" and role['user']['group'] != "Agent secteur":
             return JsonResponse({"status":"insufficient privileges"},status=401)
 
         try:

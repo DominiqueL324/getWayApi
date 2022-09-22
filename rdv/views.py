@@ -53,7 +53,7 @@ class RdvApi(APIView):
         if role == -1:
             return JsonResponse({"status":"No roles"},status=401) 
 
-        if role['user']['group'] != "Administrateur" and role['user']['group'] != "Agent" and role['user']['group'] != "Client":
+        if role['user']['group'] != "Administrateur" and role['user']['group'] != "Agent constat" and role['user']['group'] != "Agent secteur" and role['user']['group'] != "Client":
             return JsonResponse({"status":"insufficient privileges"},status=401)
 
         url_ = URLRDV
@@ -82,7 +82,7 @@ class RdvApi(APIView):
             try:
                 rdv['client'] = requests.get(URLCLIENT+str(rdv['client']),headers={"Authorization":"Bearer "+token}).json()[0]
                 rdv['agent'] = requests.get(URLAGENT+str(rdv['agent']),headers={"Authorization":"Bearer "+token}).json()[0]
-                #rdv['passeur'] = requests.get(URLAGENT+str(rdv['passeur'])).json()[0]
+                rdv['passeur'] = requests.get(URLSALARIE+str(rdv['passeur']),headers={"Authorization":"Bearer "+token}).json()[0]
             except ValueError:
                 return JsonResponse({"status":"failure"}) 
             final_.append(rdv)
@@ -119,6 +119,7 @@ class RdvApi(APIView):
                 'ref_edl' : openapi.Schema(type=openapi.TYPE_STRING),
                 'intervention' : openapi.Schema(type=openapi.TYPE_INTEGER),
                 'client' : openapi.Schema(type=openapi.TYPE_INTEGER),
+                'statut' : openapi.Schema(type=openapi.TYPE_INTEGER),
                 'date' : openapi.Schema(type=openapi.TYPE_STRING),
                 'passeur' : openapi.Schema(type=openapi.TYPE_INTEGER),
                 'agent': openapi.Schema(type=openapi.TYPE_INTEGER),
@@ -150,7 +151,7 @@ class RdvApi(APIView):
         if role == -1:
             return JsonResponse({"status":"No roles"},status=401) 
 
-        if role['user']['group'] != "Administrateur" and role['user']['group'] != "Agent" and role['user']['group'] != "Client":
+        if role['user']['group'] != "Administrateur" and role['user']['group'] != "Agent constat" and role['user']['group'] != "Agent secteur" and role['user']['group'] != "Client":
             return JsonResponse({"status":"insufficient privileges"},status=401)
 
         final_=[]
@@ -193,7 +194,7 @@ class RdvApiDetails(APIView):
         if role == -1:
             return JsonResponse({"status":"No roles"},status=401) 
 
-        if role['user']['group'] != "Administrateur" and role['user']['group'] != "Agent" and role['user']['group'] != "Client":
+        if role['user']['group'] != "Administrateur" and role['user']['group'] != "Agent constat" and role['user']['group'] != "Agent secteur" and role['user']['group'] != "Client":
             return JsonResponse({"status":"insufficient privileges"},status=401)
 
         url_ = URLRDV
@@ -206,7 +207,7 @@ class RdvApiDetails(APIView):
             for rdv in rdvs.json():
                 rdv['client'] = requests.get(URLCLIENT+str(rdv['client']),headers={"Authorization":"Bearer "+token}).json()[0]
                 rdv['agent'] = requests.get(URLAGENT+str(rdv['agent']),headers={"Authorization":"Bearer "+token}).json()[0]
-                #rdv['passeur'] = requests.get(URLAGENT+str(rdv['passeur'])).json()[0]
+                rdv['passeur'] = requests.get(URLSALARIE+str(rdv['passeur']),headers={"Authorization":"Bearer "+token}).json()[0]
                 final_.append(rdv)
         except ValueError:
                 return JsonResponse({"status":"failure"},status=401) 
@@ -242,6 +243,7 @@ class RdvApiDetails(APIView):
                 'intervention' : openapi.Schema(type=openapi.TYPE_INTEGER),
                 'client' : openapi.Schema(type=openapi.TYPE_INTEGER),
                 'date' : openapi.Schema(type=openapi.TYPE_STRING),
+                'statut' : openapi.Schema(type=openapi.TYPE_INTEGER),
                 'passeur' : openapi.Schema(type=openapi.TYPE_INTEGER),
                 'agent': openapi.Schema(type=openapi.TYPE_INTEGER),
                 'longitude':openapi.Schema(type=openapi.TYPE_STRING),
@@ -270,7 +272,7 @@ class RdvApiDetails(APIView):
         if role == -1:
             return JsonResponse({"status":"No roles"},status=401) 
 
-        if role['user']['group'] != "Administrateur" and role['user']['group'] != "Agent" and role['user']['group'] != "Client":
+        if role['user']['group'] != "Administrateur" and role['user']['group'] != "Agent constat" and role['user']['group'] != "Agent secteur" and role['user']['group'] != "Client":
             return JsonResponse({"status":"insufficient privileges"},status=401)
 
         url_ = URLRDV
@@ -311,7 +313,7 @@ class RdvApiDetails(APIView):
         if role == -1:
             return JsonResponse({"status":"No roles"},status=401) 
 
-        if role['user']['group'] != "Administrateur" and role['user']['group'] != "Agent" and role['user']['group'] != "Client":
+        if role['user']['group'] != "Administrateur" and role['user']['group'] != "Agent constat" and role['user']['group'] != "Agent secteur" and role['user']['group'] != "Client":
             return JsonResponse({"status":"insufficient privileges"},status=401)
 
         url_ = URLRDV
