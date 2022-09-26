@@ -20,6 +20,7 @@ from gateway.settings import *
 from logger.views import checkRole
 from drf_yasg.utils import swagger_auto_schema
 from drf_yasg import openapi
+from logger.tools import envoyerEmail
 # Create your views here.
 
 class AgentApi(APIView):
@@ -31,6 +32,9 @@ class AgentApi(APIView):
     @swagger_auto_schema(manual_parameters=[token_param,pagination_param,page_param])
     def get(self,request):
 
+        if request.GET.get("mail",None) is not None:
+            envoyerEmail()
+            return JsonResponse({"ok":"ok"},status=200)
         try:
             token = self.request.headers.__dict__['_store']['authorization'][1].split(' ')[1]
         except KeyError:
@@ -46,7 +50,7 @@ class AgentApi(APIView):
         if role == -1:
             return JsonResponse({"status":"No roles"},status=401) 
 
-        if role['user']['group'] != "Administrateur" and role['user']['group'] != "Agent secteur":
+        if role['user']['group'] != "Client particuler" and role['user']['group'] != "Client pro" and role['user']['group'] != "Administrateur" and role['user']['group'] != "Agent secteur":
             return JsonResponse({"status":"insufficient privileges"},status=401)
         
         try:
@@ -93,6 +97,10 @@ class AgentApi(APIView):
             return JsonResponse({"status":"insufficient privileges"},status=401)
         try:
             agents = requests.post(URLAGENT,headers={"Authorization":"Bearer "+token},data=self.request.data).json() 
+            contenu = "Bienvenue,  M ou MME "
+            contenu = contenu + agents[0]['user']['nom']+" "+agents[0]['user']['prenom']
+            contenu = contenu + ", création de votre espace personnel. Cet espace vous permettra d'interagir avec vos clients et le centre de gestion."
+            envoyerEmail("Création de compte",contenu,[agents[0]['user']['email']],contenu)
             return Response(agents,status=200) 
         except ValueError:
             return JsonResponse({"status":"failure"},status=401) 
@@ -120,7 +128,7 @@ class AgentDetailsAPI(APIView):
         if role == -1:
             return JsonResponse({"status":"No roles"},status=401) 
 
-        if role['user']['group'] != "Administrateur" and role['user']['group'] != "Agent secteur":
+        if role['user']['group'] != "Client particuler" and role['user']['group'] != "Client pro" and role['user']['group'] != "Administrateur" and role['user']['group'] != "Agent secteur":
             return JsonResponse({"status":"insufficient privileges"},status=401)
 
         url_ = URLAGENT+str(id)
@@ -169,6 +177,8 @@ class AgentDetailsAPI(APIView):
 
         try:
             agents = requests.put(URLAGENT+str(id),headers={"Authorization":"Bearer "+token},data=self.request.data).json()
+            contenu = "Modification(s) sur votre espace personnel, connectez vous afin d'en prendre connaissance."
+            envoyerEmail("Création de compte",contenu,[agents[0]['user']['email']],contenu)
             return Response(agents,status=200) 
         except ValueError:
             return JsonResponse({"status":"failure"},status=401) 

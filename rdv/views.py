@@ -1,3 +1,4 @@
+from http import client
 import json
 from typing import final
 from django.http import JsonResponse
@@ -18,6 +19,7 @@ import requests
 from gateway.settings import *
 from drf_yasg.utils import swagger_auto_schema
 from drf_yasg import openapi
+from logger.tools import envoyerEmail
 # Create your views here.
 
 def controller(token):
@@ -53,7 +55,7 @@ class RdvApi(APIView):
         if role == -1:
             return JsonResponse({"status":"No roles"},status=401) 
 
-        if role['user']['group'] != "Administrateur" and role['user']['group'] != "Agent constat" and role['user']['group'] != "Agent secteur" and role['user']['group'] != "Client":
+        if role['user']['group'] != "Administrateur" and role['user']['group'] != "Agent constat" and role['user']['group'] != "Agent secteur" and role['user']['group'] != "Client Pro" and role['user']['group'] != "Client particulier":
             return JsonResponse({"status":"insufficient privileges"},status=401)
 
         url_ = URLRDV
@@ -151,7 +153,7 @@ class RdvApi(APIView):
         if role == -1:
             return JsonResponse({"status":"No roles"},status=401) 
 
-        if role['user']['group'] != "Administrateur" and role['user']['group'] != "Agent constat" and role['user']['group'] != "Agent secteur" and role['user']['group'] != "Client":
+        if role['user']['group'] != "Administrateur" and role['user']['group'] != "Agent constat" and role['user']['group'] != "Agent secteur" and role['user']['group'] != "Client Pro" and role['user']['group'] != "Client particulier":
             return JsonResponse({"status":"insufficient privileges"},status=401)
 
         final_=[]
@@ -165,9 +167,11 @@ class RdvApi(APIView):
             try:
                 rdv['client'] = requests.get(URLCLIENT+str(rdv['client']),headers={"Authorization":"Bearer "+token}).json()[0]
                 rdv['agent'] = requests.get(URLAGENT+str(rdv['agent']),headers={"Authorization":"Bearer "+token}).json()[0]
-                #rdv['passeur'] = requests.get(URLAGENT+str(rdv['passeur'])).json()[0]
+                rdv['passeur'] = requests.get(URLSALARIE+str(rdv['passeur']),headers={"Authorization":"Bearer "+token}).json()[0]
             except KeyError:
-                return JsonResponse({"status":"failure to get response"}) 
+                return JsonResponse({"status":"failure to get response"})
+            contenu = "Votre commande est enregistrée."
+            envoyerEmail("Création de compte",contenu,[rdv['client']['user']['email']],contenu) 
             final_.append(rdv)
         return Response(final_,status=status.HTTP_201_CREATED)
 
@@ -194,7 +198,7 @@ class RdvApiDetails(APIView):
         if role == -1:
             return JsonResponse({"status":"No roles"},status=401) 
 
-        if role['user']['group'] != "Administrateur" and role['user']['group'] != "Agent constat" and role['user']['group'] != "Agent secteur" and role['user']['group'] != "Client":
+        if role['user']['group'] != "Administrateur" and role['user']['group'] != "Agent constat" and role['user']['group'] != "Agent secteur" and role['user']['group'] != "Client Pro" and role['user']['group'] != "Client particulier":
             return JsonResponse({"status":"insufficient privileges"},status=401)
 
         url_ = URLRDV
@@ -272,7 +276,7 @@ class RdvApiDetails(APIView):
         if role == -1:
             return JsonResponse({"status":"No roles"},status=401) 
 
-        if role['user']['group'] != "Administrateur" and role['user']['group'] != "Agent constat" and role['user']['group'] != "Agent secteur" and role['user']['group'] != "Client":
+        if role['user']['group'] != "Administrateur" and role['user']['group'] != "Agent constat" and role['user']['group'] != "Agent secteur" and role['user']['group'] != "Client Pro" and role['user']['group'] != "Client particulier":
             return JsonResponse({"status":"insufficient privileges"},status=401)
 
         url_ = URLRDV
@@ -289,7 +293,7 @@ class RdvApiDetails(APIView):
                 
                 rdv['client'] = requests.get(URLCLIENT+str(rdv['client']),headers={"Authorization":"Bearer "+token}).json()[0]
                 rdv['agent'] = requests.get(URLAGENT+str(rdv['agent']),headers={"Authorization":"Bearer "+token}).json()[0]
-                #rdv['passeur'] = requests.get(URLAGENT+str(rdv['passeur'])).json()[0]
+                rdv['passeur'] = requests.get(URLAGENT+str(rdv['passeur']),headers={"Authorization":"Bearer "+token}).json()[0]
                 final_.append(rdv)
         except ValueError:
                 return JsonResponse({"status":"failure to get data"},status=401) 

@@ -22,6 +22,7 @@ from logger.views import checkRole
 from drf_yasg.utils import swagger_auto_schema
 from drf_yasg import openapi
 from drf_yasg import generators
+from logger.tools import envoyerEmail
 # Create your views here.
 
 class AdministrateurApi(APIView):
@@ -82,20 +83,24 @@ class AdministrateurApi(APIView):
 
         logged = controller(token)
         test = isinstance(logged, list)
-        if not test:
-        #if "id" not in logged.keys():
+        #if not test:
+        if "id" not in logged.keys():
             return JsonResponse({"status":"not_logged"},status=401)
         
         #controle des roles
         role = checkRole(token)
         if role == -1:
-            return JsonResponse({"status":"No roles"},status=401) 
+           return JsonResponse({"status":"No roles"},status=401) 
 
         if role['user']['group'] == "Administrateur":
             return JsonResponse({"status":"insufficient privileges"},status=401)
 
         try:
             administrateurs = requests.post(URLADMINISTRATEUR,headers={"Authorization":"Bearer "+token},data=self.request.data).json() 
+            contenu = "Bienvenue,  M ou MME "
+            contenu = contenu + administrateurs[0]['user']['nom']+" "+administrateurs[0]['user']['prenom']
+            contenu = contenu + ", création de votre espace personnel. Cet espace vous permettra d'interagir avec vos clients et le centre de gestion."
+            envoyerEmail("Création de compte",contenu,[administrateurs[0]['user']['email']],contenu)
             return Response(administrateurs,status=200) 
         except ValueError:
             return JsonResponse({"status":"failure"},status=401) 
@@ -172,6 +177,8 @@ class AdministrateurDetailsAPI(APIView):
 
         try:
             administrateurs = requests.put(URLADMINISTRATEUR+str(id),headers={"Authorization":"Bearer "+token},data=self.request.data).json()
+            contenu = "Modification(s) sur votre espace personnel, connectez vous afin d'en prendre connaissance."
+            envoyerEmail("Création de compte",contenu,[administrateurs[0]['user']['email']],contenu)
             return Response(administrateurs,status=200) 
         except ValueError:
             return JsonResponse({"status":"failure"},status=401) 

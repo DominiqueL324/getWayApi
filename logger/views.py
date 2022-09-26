@@ -66,9 +66,32 @@ class LoginApi(APIView):
             return JsonResponse({"status":"Bad credentials"},status=401)
         
         access_ = token["access"]
+        url_ = URLRDV
         
         try:
             user = requests.get("http://127.0.0.1:8050/manager_app/viewset/role/?token="+access_,headers={"Authorization":"Bearer "+access_}).json()[0]
+            
+            #récupération des RDV pour stat
+            if user['user']['group'] == "Agent secteur":
+                rdv = requests.get(url_+"?agentcount="+str(user['id'])).json()
+                user['stats']['rdv'] = rdv["Rdv"]
+            
+            if user['user']['group'] == "Agent constat":
+                rdv = requests.get(url_+"?agentcountconst="+str(user['id'])).json()
+                user['stats']['rdv'] = rdv["Rdv"]
+
+            if user['user']['group'] == "Client pro" or user['user']['group'] == "Client particulier":
+                rdv = requests.get(url_+"?clientcount="+str(user['id'])).json()
+                user['stats']['rdv'] = rdv["Rdv"]
+
+            if user['user']['group'] == "Administrateur":
+                rdv = requests.get(url_+"?admincount="+str(user['id'])).json()
+                user['stats']['rdv'] = rdv["Rdv"]
+            
+            if user['user']['group'] == "Salarie":
+                rdv = requests.get(url_+"?salariecount="+str(user['id'])).json()
+                user['stats']['rdv'] = rdv["Rdv"]
+
             user['tokens']=token
         except ValueError:
             return JsonResponse({"status":"Faillure"},status=401)

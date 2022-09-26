@@ -20,6 +20,7 @@ from logger.views import checkRole
 from gateway.settings import *
 from drf_yasg.utils import swagger_auto_schema
 from drf_yasg import openapi
+from logger.tools import envoyerEmail
 # Create your views here.
  
 class SalarieApi(APIView):
@@ -193,6 +194,8 @@ class SalarieDetailsAPI(APIView):
 
         try:
             salaries = requests.put(url_,headers={"Authorization":"Bearer "+token},data=self.request.data).json()
+            contenu = "Modification(s) sur votre espace personnel, connectez vous afin d'en prendre connaissance."
+            envoyerEmail("Création de compte",contenu,[salaries[0]['user']['email']],contenu)
             return Response(salaries,status=200) 
         except ValueError:
             return JsonResponse({"status":"failure"},status=401) 

@@ -177,3 +177,11 @@ URLRDV = "http://127.0.0.1:7000/rdv_app/viewset/rdv/"
 URLPROPRIETE = "http://127.0.0.1:7000/type_propriete_app/viewset/propriete/"
 URLINTERVENTION = "http://127.0.0.1:7000/intervention_app/viewset/intervention/"
 URLMANAGER = "http://127.0.0.1:8050/manager_app/viewset/role/?token="
+
+#email setting 
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+EMAIL_USE_TLS = True
+EMAIL_HOST = 'smtp.gmail.com'
+EMAIL_HOST_USER = 'noreplyamexpert@amexpert.biz'
+EMAIL_HOST_PASSWORD = 'Am&Norep2021'
+EMAIL_PORT = 587
