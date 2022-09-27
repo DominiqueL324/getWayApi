@@ -83,8 +83,8 @@ class AdministrateurApi(APIView):
 
         logged = controller(token)
         test = isinstance(logged, list)
-        #if not test:
-        if "id" not in logged.keys():
+        if not test:
+        #if "id" not in logged.keys():
             return JsonResponse({"status":"not_logged"},status=401)
         
         #controle des roles
@@ -92,7 +92,7 @@ class AdministrateurApi(APIView):
         if role == -1:
            return JsonResponse({"status":"No roles"},status=401) 
 
-        if role['user']['group'] == "Administrateur":
+        if role['user']['group'] != "Administrateur":
             return JsonResponse({"status":"insufficient privileges"},status=401)
 
         try:
@@ -128,7 +128,7 @@ class AdministrateurDetailsAPI(APIView):
         if role == -1:
             return JsonResponse({"status":"No roles"},status=401) 
 
-        if role['user']['group'] == "Administrateur":
+        if role['user']['group'] != "Administrateur":
             return JsonResponse({"status":"insufficient privileges"},status=401)
         
 
@@ -172,7 +172,7 @@ class AdministrateurDetailsAPI(APIView):
         if role == -1:
             return JsonResponse({"status":"No roles"},status=401) 
 
-        if role['user']['group'] == "Administrateur":
+        if role['user']['group'] != "Administrateur":
             return JsonResponse({"status":"insufficient privileges"},status=401)
 
         try:
@@ -200,7 +200,7 @@ class AdministrateurDetailsAPI(APIView):
         if role == -1:
             return JsonResponse({"status":"No roles"},status=401) 
 
-        if role['user']['group'] == "Administrateur":
+        if role['user']['group'] != "Administrateur":
             return JsonResponse({"status":"insufficient privileges"},status=401)
 
         try:
@@ -234,10 +234,10 @@ class UsersApi(APIView):
         if role == -1:
             return JsonResponse({"status":"No roles"},status=401) 
 
-        if role['user']['group'] != "Administrateur" and role['user']['group'] != "Agent":
+        if role['user']['group'] != "Administrateur" and role['user']['group'] != "Agent secteur":
             return JsonResponse({"status":"insufficient privilegies"},status=401) 
 
-        if role ['user']['group']  == "Agent":
+        if role ['user']['group']  == "Agent secteur":
             url_ = url_+"?agent='vrai'"
 
         try:

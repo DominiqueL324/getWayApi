@@ -50,10 +50,15 @@ class ClientApi(APIView):
 
         if role['user']['group'] != "Administrateur" and role['user']['group'] != "Agent secteur":
             return JsonResponse({"status":"insufficient privileges"},status=401)
+
+        url_= URLCLIENT
+        if role ['user']['group']  == "Agent secteur":
+            url_ = url_+"?token="+token
+        
         
         final_=[]
         try:
-            clients = requests.get(URLCLIENT,headers={"Authorization":"Bearer "+token},params=self.request.query_params).json()
+            clients = requests.get(url_,headers={"Authorization":"Bearer "+token},params=self.request.query_params).json()
             return Response(clients,status=200) 
         except ValueError:
             return JsonResponse({"status":"failure"},status=401)
@@ -201,8 +206,10 @@ class ClientDetailsAPI(APIView):
 
         #controle des roles 
         role = checkRole(token)
-        if role['user']['group'] != "Administrateur" and role['user']['group'] != "Agent secteur":
-            if role['user']['group'] == "Client" and int(role['id'])==int(id):
+        if role['user']['group'] != "Administrateur" and role['user']['group'] != "Agent secteur" and role['user']['group'] == "Client particulier" and role['user']['group'] == "Client pro":
+            if role['user']['group'] == "Client pro" and int(role['id'])==int(id):
+                url_ = URLCLIENT+str(id)
+            elif role['user']['group'] == "Client particulier" and int(role['id'])==int(id):
                 url_ = URLCLIENT+str(id)
             else:
                 return JsonResponse({"status":"insufficient privileges"},status=401)
@@ -233,8 +240,11 @@ class ClientDetailsAPI(APIView):
 
         #controle des roles 
         role = checkRole(token)
-        if role['user']['group'] != "Administrateur" and role['user']['group'] != "Agent secteur":
-            if role['user']['group'] == "Client" and int(role['id'])==int(id):
+        
+        if role['user']['group'] != "Administrateur" and role['user']['group'] != "Agent secteur" and role['user']['group'] != "Client pro" and role['user']['group'] != "Client particulier":
+            if role['user']['group'] == "Client pro" and int(role['id'])==int(id):
+                url_ = URLCLIENT+str(id)
+            elif role['user']['group'] == "Client particulier" and int(role['id'])==int(id):
                 url_ = URLCLIENT+str(id)
             else:
                 return JsonResponse({"status":"insufficient privileges"},status=401)
