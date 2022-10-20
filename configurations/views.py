@@ -128,7 +128,7 @@ class InterventionDetailsAPI(APIView):
 
         try:
             interventions = requests.put(URLINTERVENTION+str(id),data=self.request.data).json()
-            return Response(interventions,status=401) 
+            return Response(interventions,status=201) 
         except ValueError:
             return JsonResponse({"status":"failure"},status=401) 
 
@@ -260,7 +260,7 @@ class TypeProprieteDetailsAPI(APIView):
 
         try:
             proprietes = requests.put(URLPROPRIETE+str(id),data=self.request.data).json()
-            return Response(proprietes,status=401) 
+            return Response(proprietes,status=200) 
         except ValueError:
             return JsonResponse({"status":"failure"},status=401) 
 

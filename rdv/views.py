@@ -55,7 +55,7 @@ class RdvApi(APIView):
         if role == -1:
             return JsonResponse({"status":"No roles"},status=401) 
 
-        if role['user']['group'] != "Administrateur" and role['user']['group'] != "Agent constat" and role['user']['group'] != "Agent secteur" and role['user']['group'] != "Client pro" and role['user']['group'] != "Client particulier":
+        if role['user']['group'] != "Administrateur" and role['user']['group'] != "Agent constat" and role['user']['group'] != "Agent secteur" and role['user']['group'] != "Client pro" and role['user']['group'] != "Client particulier" and role['user']['group'] != "Salarie":
             return JsonResponse({"status":"insufficient privileges"},status=401)
 
         url_ = URLRDV
@@ -65,6 +65,12 @@ class RdvApi(APIView):
         
         if role['user']['group'] == "Agent secteur":
             url_ = url_+"?agent="+str(role['id'])
+        
+        if role['user']['group'] == "Agent constat":
+            url_ = url_+"?constat="+str(role['id'])
+        
+        if role['user']['group'] == "Salarie":
+            url_ = url_+"?passeur="+str(role['id'])
 
         finaly_ ={}
         """if(request.GET.get("value",None) is not None):
@@ -85,6 +91,10 @@ class RdvApi(APIView):
                 rdv['client'] = requests.get(URLCLIENT+str(rdv['client']),headers={"Authorization":"Bearer "+token}).json()[0]
                 if rdv['agent'] is not None:
                     rdv['agent'] = requests.get(URLAGENT+str(rdv['agent']),headers={"Authorization":"Bearer "+token}).json()[0]
+                if rdv['agent_constat'] is not None:
+                    rdv['agent_constat'] = requests.get(URLAGENT+str(rdv['agent_constat']),headers={"Authorization":"Bearer "+token}).json()[0]
+                if rdv['audit_planneur'] is not None:
+                    rdv['audit_planneur'] = requests.get(URLAGENT+str(rdv['audit_planneur']),headers={"Authorization":"Bearer "+token}).json()[0]
                 if rdv['passeur'] is not None:
                     rdv['passeur'] = requests.get(URLSALARIE+str(rdv['passeur']),headers={"Authorization":"Bearer "+token}).json()[0]
             except ValueError:
@@ -155,7 +165,7 @@ class RdvApi(APIView):
         if role == -1:
             return JsonResponse({"status":"No roles"},status=401) 
 
-        if role['user']['group'] != "Administrateur" and role['user']['group'] != "Agent constat" and role['user']['group'] != "Agent secteur" and role['user']['group'] != "Client pro" and role['user']['group'] != "Client particulier":
+        if role['user']['group'] != "Administrateur" and role['user']['group'] != "Agent constat" and role['user']['group'] != "Agent secteur" and role['user']['group'] != "Client pro" and role['user']['group'] != "Client particulier" and role['user']['group'] != "Salarie":
             return JsonResponse({"status":"insufficient privileges"},status=401)
 
         final_=[]
@@ -168,8 +178,14 @@ class RdvApi(APIView):
         for rdv in rdvs.json():
             try:
                 rdv['client'] = requests.get(URLCLIENT+str(rdv['client']),headers={"Authorization":"Bearer "+token}).json()[0]
-                rdv['agent'] = requests.get(URLAGENT+str(rdv['agent']),headers={"Authorization":"Bearer "+token}).json()[0]
-                rdv['passeur'] = requests.get(URLSALARIE+str(rdv['passeur']),headers={"Authorization":"Bearer "+token}).json()[0]
+                if rdv['agent'] is not None:
+                    rdv['agent'] = requests.get(URLAGENT+str(rdv['agent']),headers={"Authorization":"Bearer "+token}).json()[0]
+                if rdv['agent_constat'] is not None:
+                    rdv['agent_constat'] = requests.get(URLAGENT+str(rdv['agent_constat']),headers={"Authorization":"Bearer "+token}).json()[0]
+                if rdv['audit_planneur'] is not None:
+                    rdv['audit_planneur'] = requests.get(URLAGENT+str(rdv['audit_planneur']),headers={"Authorization":"Bearer "+token}).json()[0]
+                if rdv['passeur'] is not None:
+                    rdv['passeur'] = requests.get(URLSALARIE+str(rdv['passeur']),headers={"Authorization":"Bearer "+token}).json()[0]
             except KeyError:
                 return JsonResponse({"status":"failure to get response"})
             contenu = "Votre commande est enregistrée."
@@ -200,20 +216,26 @@ class RdvApiDetails(APIView):
         if role == -1:
             return JsonResponse({"status":"No roles"},status=401) 
 
-        if role['user']['group'] != "Administrateur" and role['user']['group'] != "Agent constat" and role['user']['group'] != "Agent secteur" and role['user']['group'] != "Client pro" and role['user']['group'] != "Client particulier":
+        if role['user']['group'] != "Administrateur" and role['user']['group'] != "Agent constat" and role['user']['group'] != "Agent secteur" and role['user']['group'] != "Client pro" and role['user']['group'] != "Client particulier" and role['user']['group'] != "Salarie":
             return JsonResponse({"status":"insufficient privileges"},status=401)
 
         url_ = URLRDV
 
         final_ = []
         url_ = URLRDV+str(id)
-        rdvs = requests.get(url_)
+        rdvs = requests.get(url_,params=self.request.query_params)
 
         try:
             for rdv in rdvs.json():
                 rdv['client'] = requests.get(URLCLIENT+str(rdv['client']),headers={"Authorization":"Bearer "+token}).json()[0]
-                rdv['agent'] = requests.get(URLAGENT+str(rdv['agent']),headers={"Authorization":"Bearer "+token}).json()[0]
-                rdv['passeur'] = requests.get(URLSALARIE+str(rdv['passeur']),headers={"Authorization":"Bearer "+token}).json()[0]
+                if rdv['agent'] is not None:
+                    rdv['agent'] = requests.get(URLAGENT+str(rdv['agent']),headers={"Authorization":"Bearer "+token}).json()[0]
+                if rdv['agent_constat'] is not None:
+                    rdv['agent_constat'] = requests.get(URLAGENT+str(rdv['agent_constat']),headers={"Authorization":"Bearer "+token}).json()[0]
+                if rdv['audit_planneur'] is not None:
+                    rdv['audit_planneur'] = requests.get(URLAGENT+str(rdv['audit_planneur']),headers={"Authorization":"Bearer "+token}).json()[0]
+                if rdv['passeur'] is not None:
+                    rdv['passeur'] = requests.get(URLSALARIE+str(rdv['passeur']),headers={"Authorization":"Bearer "+token}).json()[0]
                 final_.append(rdv)
         except ValueError:
                 return JsonResponse({"status":"failure"},status=401) 
@@ -278,7 +300,7 @@ class RdvApiDetails(APIView):
         if role == -1:
             return JsonResponse({"status":"No roles"},status=401) 
 
-        if role['user']['group'] != "Administrateur" and role['user']['group'] != "Agent constat" and role['user']['group'] != "Agent secteur" and role['user']['group'] != "Client pro" and role['user']['group'] != "Client particulier":
+        if role['user']['group'] != "Administrateur" and role['user']['group'] != "Agent constat" and role['user']['group'] != "Agent secteur" and role['user']['group'] != "Client pro" and role['user']['group'] != "Client particulier" and role['user']['group'] != "Salarie":
             return JsonResponse({"status":"insufficient privileges"},status=401)
 
         url_ = URLRDV
@@ -292,10 +314,15 @@ class RdvApiDetails(APIView):
         rdvs = requests.get(URLRDV+str(rdvs['id']))
         try:
             for rdv in rdvs.json():
-                
                 rdv['client'] = requests.get(URLCLIENT+str(rdv['client']),headers={"Authorization":"Bearer "+token}).json()[0]
-                rdv['agent'] = requests.get(URLAGENT+str(rdv['agent']),headers={"Authorization":"Bearer "+token}).json()[0]
-                rdv['passeur'] = requests.get(URLSALARIE+str(rdv['passeur']),headers={"Authorization":"Bearer "+token}).json()[0]
+                if rdv['agent'] is not None:
+                    rdv['agent'] = requests.get(URLAGENT+str(rdv['agent']),headers={"Authorization":"Bearer "+token}).json()[0]
+                if rdv['agent_constat'] is not None:
+                    rdv['agent_constat'] = requests.get(URLAGENT+str(rdv['agent_constat']),headers={"Authorization":"Bearer "+token}).json()[0]
+                if rdv['audit_planneur'] is not None:
+                    rdv['audit_planneur'] = requests.get(URLAGENT+str(rdv['audit_planneur']),headers={"Authorization":"Bearer "+token}).json()[0]
+                if rdv['passeur'] is not None:
+                    rdv['passeur'] = requests.get(URLSALARIE+str(rdv['passeur']),headers={"Authorization":"Bearer "+token}).json()[0]
                 final_.append(rdv)
         except ValueError:
                 return JsonResponse({"status":"failure to get data"},status=401) 
@@ -329,5 +356,35 @@ class RdvApiDetails(APIView):
             return JsonResponse({"status":"done"},status=200)
         except ValueError:
             return JsonResponse({"status":"failure"},status=401)
+
+class importRdvApi(APIView):
+    def post(self,request):
+        try:
+            token = self.request.headers.__dict__['_store']['authorization'][1].split(' ')[1]
+        except KeyError:
+            return JsonResponse({"status":"not_logged"},status=401)
+
+        logged = controller(token)
+        test = isinstance(logged, list)
+        if not test:
+        #if "id" not in logged.keys():
+            return JsonResponse({"status":"not_logged"},status=401)
+
+        #contrôle des roles
+        role = checkRole(token)
+        if role == -1:
+            return JsonResponse({"status":"No roles"},status=401) 
+
+        if role['user']['group'] != "Administrateur" :
+            return JsonResponse({"status":"insufficient privileges"},status=401)
+
+        try:
+            #data = request.data
+            file = {'fichier': request.FILES["fichier"]}
+            rdvs = requests.post(URLRDVIMPORT,files=file,data={"cible":3}).json()[0]
+        except KeyError:
+            return JsonResponse({"status":"failure to post data"}) 
+        return Response(rdvs,status=status.HTTP_201_CREATED)
+
 
 

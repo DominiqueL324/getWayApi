@@ -21,6 +21,7 @@ from rdv.views import controller
 from gateway.settings import *
 from drf_yasg.utils import swagger_auto_schema
 from drf_yasg import openapi
+from .tools import envoyerEmail
 
 
 class RefreshToken(APIView):
@@ -137,6 +138,23 @@ class checkExistingMails(APIView):
             return JsonResponse({"status":"not_logged"},status=401)
         try:
             resp = requests.get("http://127.0.0.1:8050/manager_app/viewset/checker/",headers={"Authorization":"Bearer "+token},params=request.query_params).json()
+        except ValueError:
+            return JsonResponse({"status":"Faillure"},status=401)
+        return Response(resp,status=status.HTTP_200_OK)
+
+class GetPassword(APIView):
+    def get(self,request):
+        try:
+            resp = requests.get(URLBACKUPPASS,params=request.query_params).json()[0]
+        except ValueError:
+            return JsonResponse({"status":"Faillure"},status=401)
+        return Response(resp,status=status.HTTP_200_OK)
+    
+    def post(self,request):
+        try:
+            resp = requests.post(URLBACKUPPASS,data=self.request.data).json()
+            contenu = "Votre mot de passe de récupération est "+resp["pass"]
+            envoyerEmail("Récupération mot de passe",contenu,[request.data['email']],contenu)
         except ValueError:
             return JsonResponse({"status":"Faillure"},status=401)
         return Response(resp,status=status.HTTP_200_OK)

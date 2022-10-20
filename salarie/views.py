@@ -131,7 +131,7 @@ class SalarieDetailsAPI(APIView):
         if role == -1:
             return JsonResponse({"status":"No roles"},status=401) 
 
-        if role['user']['group'] != "Administrateur" and role['user']['group'] != "Agent constat" and role['user']['group'] != "Agent secteur" and  role['user']['group'] != "Client pro":
+        if role['user']['group'] != "Administrateur" and role['user']['group'] != "Agent constat" and role['user']['group'] != "Audit planneur" and role['user']['group'] != "Agent secteur" and  role['user']['group'] != "Client pro":
             if role['user']['group'] == "Salarie" and int(role['id'])==int(id):
                 url_ = URLSALARIE+str(id)
             else:
@@ -182,7 +182,7 @@ class SalarieDetailsAPI(APIView):
 
         #controle des roles 
         role = checkRole(token)
-        if role['user']['group'] != "Administrateur" and role['user']['group'] != "Agent constat" and role['user']['group'] != "Agent secteur" and  role['user']['group'] != "Client pro":
+        if role['user']['group'] != "Administrateur" and role['user']['group'] != "Agent constat" and role['user']['group'] != "Agent secteur" and  role['user']['group'] != "Client pro" and role['user']['group'] != "Audit planneur":
             if role['user']['group'] == "Salarie" and int(role['id'])==int(id):
                 url_ = URLSALARIE+str(id)
             else:

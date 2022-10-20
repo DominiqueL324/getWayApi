@@ -50,7 +50,7 @@ class AgentApi(APIView):
         if role == -1:
             return JsonResponse({"status":"No roles"},status=401) 
 
-        if role['user']['group'] != "Client particuler" and role['user']['group'] != "Client pro" and role['user']['group'] != "Administrateur" and role['user']['group'] != "Agent secteur":
+        if role['user']['group'] != "Client particuler" and role['user']['group'] != "Client pro" and role['user']['group'] != "Administrateur" and role['user']['group'] != "Agent secteur" and role['user']['group'] != "Agent constat" and role['user']['group'] != "Audit planneur":
             return JsonResponse({"status":"insufficient privileges"},status=401)
         
         try:
@@ -93,7 +93,7 @@ class AgentApi(APIView):
         if role == -1:
             return JsonResponse({"status":"No roles"},status=401) 
 
-        if role['user']['group'] != "Administrateur" and role['user']['group'] != "Agent secteur":
+        if role['user']['group'] != "Administrateur" and role['user']['group'] != "Agent secteur" and role['user']['group'] != "Agent constat" and role['user']['group'] != "Audit planneur":
             return JsonResponse({"status":"insufficient privileges"},status=401)
         try:
             agents = requests.post(URLAGENT,headers={"Authorization":"Bearer "+token},data=self.request.data).json() 
@@ -128,7 +128,7 @@ class AgentDetailsAPI(APIView):
         if role == -1:
             return JsonResponse({"status":"No roles"},status=401) 
 
-        if role['user']['group'] != "Client particuler" and role['user']['group'] != "Client pro" and role['user']['group'] != "Administrateur" and role['user']['group'] != "Agent secteur":
+        if role['user']['group'] != "Client particuler" and role['user']['group'] != "Client pro" and role['user']['group'] != "Administrateur" and role['user']['group'] != "Agent secteur" and role['user']['group'] != "Agent constat" and role['user']['group'] != "Audit planneur":
             return JsonResponse({"status":"insufficient privileges"},status=401)
 
         url_ = URLAGENT+str(id)
@@ -172,13 +172,14 @@ class AgentDetailsAPI(APIView):
         if role == -1:
             return JsonResponse({"status":"No roles"},status=401) 
 
-        if role['user']['group'] != "Administrateur" and role['user']['group'] != "Agent secteur" and role['user']['group'] != "Agent constat":
+        if role['user']['group'] != "Administrateur" and role['user']['group'] != "Agent secteur" and role['user']['group'] != "Agent constat" and role['user']['group'] != "Audit planneur":
             return JsonResponse({"status":"insufficient privileges"},status=401)
 
         try:
             agents = requests.put(URLAGENT+str(id),headers={"Authorization":"Bearer "+token},data=self.request.data).json()
             contenu = "Modification(s) sur votre espace personnel, connectez vous afin d'en prendre connaissance."
-            envoyerEmail("Création de compte",contenu,[agents[0]['user']['email']],contenu)
+            agents[0]['email'] = envoyerEmail("Création de compte",contenu,[agents[0]['user']['email']],contenu)
+            agents[0]['email_send'] = agents[0]['user']['email']
             return Response(agents,status=200) 
         except ValueError:
             return JsonResponse({"status":"failure"},status=401) 

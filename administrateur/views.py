@@ -94,7 +94,7 @@ class AdministrateurApi(APIView):
 
         if role['user']['group'] != "Administrateur":
             return JsonResponse({"status":"insufficient privileges"},status=401)
-
+        
         try:
             administrateurs = requests.post(URLADMINISTRATEUR,headers={"Authorization":"Bearer "+token},data=self.request.data).json() 
             contenu = "Bienvenue,  M ou MME "
@@ -234,10 +234,10 @@ class UsersApi(APIView):
         if role == -1:
             return JsonResponse({"status":"No roles"},status=401) 
 
-        if role['user']['group'] != "Administrateur" and role['user']['group'] != "Agent secteur":
+        if role['user']['group'] != "Administrateur" and role['user']['group'] != "Agent secteur" and role['user']['group'] != "Agent constat" and role['user']['group'] != "Audit planneur":
             return JsonResponse({"status":"insufficient privilegies"},status=401) 
 
-        if role ['user']['group']  == "Agent secteur":
+        if role ['user']['group']  == "Agent secteur" or role['user']['group'] != "Agent constat" or role['user']['group'] != "Audit planneur":
             url_ = url_+"?agent='vrai'"
 
         try:
