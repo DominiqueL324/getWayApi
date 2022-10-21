@@ -52,10 +52,9 @@ class ClientApi(APIView):
             return JsonResponse({"status":"insufficient privileges"},status=401)
 
         url_= URLCLIENT
-        if role ['user']['group']  == "Agent secteur" or role['user']['group'] != "Agent constat" or role['user']['group'] != "Audit planneur":
+        if role ['user']['group']  == "Agent secteur" or role['user']['group'] == "Agent constat" or role['user']['group'] == "Audit planneur":
             url_ = url_+"?token="+token
-        
-        
+
         final_=[]
         try:
             clients = requests.get(url_,headers={"Authorization":"Bearer "+token},params=self.request.query_params).json()

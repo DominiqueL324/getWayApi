@@ -90,13 +90,17 @@ class RdvApi(APIView):
             try:
                 rdv['client'] = requests.get(URLCLIENT+str(rdv['client']),headers={"Authorization":"Bearer "+token}).json()[0]
                 if rdv['agent'] is not None:
-                    rdv['agent'] = requests.get(URLAGENT+str(rdv['agent']),headers={"Authorization":"Bearer "+token}).json()[0]
+                    id_f = str(rdv['agent']).split(".")[0]
+                    rdv['agent'] = requests.get(URLAGENT+str(id_f)+"?specific=t",headers={"Authorization":"Bearer "+token}).json()[0]
                 if rdv['agent_constat'] is not None:
-                    rdv['agent_constat'] = requests.get(URLAGENT+str(rdv['agent_constat']),headers={"Authorization":"Bearer "+token}).json()[0]
+                    id_f = str(rdv['agent_constat']).split(".")[0]
+                    rdv['agent_constat'] = requests.get(URLAGENT+str(id_f)+"?specific=t",headers={"Authorization":"Bearer "+token}).json()[0]
                 if rdv['audit_planneur'] is not None:
-                    rdv['audit_planneur'] = requests.get(URLAGENT+str(rdv['audit_planneur']),headers={"Authorization":"Bearer "+token}).json()[0]
+                    id_f = str(rdv['audit_planneur']).split(".")[0]
+                    rdv['audit_planneur'] = requests.get(URLAGENT+str(id_f)+"?specific=t",headers={"Authorization":"Bearer "+token}).json()[0]
                 if rdv['passeur'] is not None:
-                    rdv['passeur'] = requests.get(URLSALARIE+str(rdv['passeur']),headers={"Authorization":"Bearer "+token}).json()[0]
+                    id_f = str(rdv['passeur']).split(".")[0]
+                    rdv['passeur'] = requests.get(URLSALARIE+str(id_f)+"?specific=t",headers={"Authorization":"Bearer "+token}).json()
             except ValueError:
                 return JsonResponse({"status":"failure"}) 
             final_.append(rdv)
@@ -179,13 +183,16 @@ class RdvApi(APIView):
             try:
                 rdv['client'] = requests.get(URLCLIENT+str(rdv['client']),headers={"Authorization":"Bearer "+token}).json()[0]
                 if rdv['agent'] is not None:
-                    rdv['agent'] = requests.get(URLAGENT+str(rdv['agent']),headers={"Authorization":"Bearer "+token}).json()[0]
+                    id_f = str(rdv['agent']).split(".")[0]
+                    rdv['agent'] = requests.get(URLAGENT+str(id_f)+"?specific=t",headers={"Authorization":"Bearer "+token}).json()[0]
                 if rdv['agent_constat'] is not None:
-                    rdv['agent_constat'] = requests.get(URLAGENT+str(rdv['agent_constat']),headers={"Authorization":"Bearer "+token}).json()[0]
+                    id_f = str(rdv['agent_constat']).split(".")[0]
+                    rdv['agent_constat'] = requests.get(URLAGENT+str(id_f)+"?specific=t",headers={"Authorization":"Bearer "+token}).json()[0]
                 if rdv['audit_planneur'] is not None:
-                    rdv['audit_planneur'] = requests.get(URLAGENT+str(rdv['audit_planneur']),headers={"Authorization":"Bearer "+token}).json()[0]
+                    id_f = str(rdv['audit_planneur']).split(".")[0]
+                    rdv['audit_planneur'] = requests.get(URLAGENT+str(id_f)+"?specific=t",headers={"Authorization":"Bearer "+token}).json()[0]
                 if rdv['passeur'] is not None:
-                    rdv['passeur'] = requests.get(URLSALARIE+str(rdv['passeur']),headers={"Authorization":"Bearer "+token}).json()[0]
+                    rdv['passeur'] = requests.get(URLSALARIE+"?specific=t"+str(rdv['passeur']),headers={"Authorization":"Bearer "+token}).json()
             except KeyError:
                 return JsonResponse({"status":"failure to get response"})
             contenu = "Votre commande est enregistrée."
@@ -229,13 +236,17 @@ class RdvApiDetails(APIView):
             for rdv in rdvs.json():
                 rdv['client'] = requests.get(URLCLIENT+str(rdv['client']),headers={"Authorization":"Bearer "+token}).json()[0]
                 if rdv['agent'] is not None:
-                    rdv['agent'] = requests.get(URLAGENT+str(rdv['agent']),headers={"Authorization":"Bearer "+token}).json()[0]
+                    id_f = str(rdv['agent']).split(".")[0]
+                    rdv['agent'] = requests.get(URLAGENT+str(id_f)+"?specific=t",headers={"Authorization":"Bearer "+token}).json()[0]
                 if rdv['agent_constat'] is not None:
-                    rdv['agent_constat'] = requests.get(URLAGENT+str(rdv['agent_constat']),headers={"Authorization":"Bearer "+token}).json()[0]
+                    id_f = str(rdv['agent_constat']).split(".")[0]
+                    rdv['agent_constat'] = requests.get(URLAGENT+str(id_f)+"?specific=t",headers={"Authorization":"Bearer "+token}).json()[0]
                 if rdv['audit_planneur'] is not None:
-                    rdv['audit_planneur'] = requests.get(URLAGENT+str(rdv['audit_planneur']),headers={"Authorization":"Bearer "+token}).json()[0]
+                    id_f = str(rdv['audit_planneur']).split(".")[0]
+                    rdv['audit_planneur'] = requests.get(URLAGENT+str(id_f)+"?specific=t",headers={"Authorization":"Bearer "+token}).json()[0]
                 if rdv['passeur'] is not None:
-                    rdv['passeur'] = requests.get(URLSALARIE+str(rdv['passeur']),headers={"Authorization":"Bearer "+token}).json()[0]
+                    id_f = str(rdv['passeur']).split(".")[0]
+                    rdv['passeur'] = requests.get(URLSALARIE+str(id_f)+"?specific=t",headers={"Authorization":"Bearer "+token}).json()
                 final_.append(rdv)
         except ValueError:
                 return JsonResponse({"status":"failure"},status=401) 
@@ -316,13 +327,16 @@ class RdvApiDetails(APIView):
             for rdv in rdvs.json():
                 rdv['client'] = requests.get(URLCLIENT+str(rdv['client']),headers={"Authorization":"Bearer "+token}).json()[0]
                 if rdv['agent'] is not None:
-                    rdv['agent'] = requests.get(URLAGENT+str(rdv['agent']),headers={"Authorization":"Bearer "+token}).json()[0]
+                    id_f = str(rdv['agent']).split(".")[0]
+                    rdv['agent'] = requests.get(URLAGENT+str(id_f)+"?specific=t",headers={"Authorization":"Bearer "+token}).json()[0]
                 if rdv['agent_constat'] is not None:
-                    rdv['agent_constat'] = requests.get(URLAGENT+str(rdv['agent_constat']),headers={"Authorization":"Bearer "+token}).json()[0]
+                    id_f = str(rdv['agent_constat']).split(".")[0]
+                    rdv['agent_constat'] = requests.get(URLAGENT+str(id_f)+"?specific=t",headers={"Authorization":"Bearer "+token}).json()[0]
                 if rdv['audit_planneur'] is not None:
-                    rdv['audit_planneur'] = requests.get(URLAGENT+str(rdv['audit_planneur']),headers={"Authorization":"Bearer "+token}).json()[0]
+                    id_f = str(rdv['audit_planneur']).split(".")[0]
+                    rdv['audit_planneur'] = requests.get(URLAGENT+str(id_f)+"?specific=t",headers={"Authorization":"Bearer "+token}).json()[0]
                 if rdv['passeur'] is not None:
-                    rdv['passeur'] = requests.get(URLSALARIE+str(rdv['passeur']),headers={"Authorization":"Bearer "+token}).json()[0]
+                    rdv['passeur'] = requests.get(URLSALARIE+"?specific=t"+str(rdv['passeur']),headers={"Authorization":"Bearer "+token}).json()
                 final_.append(rdv)
         except ValueError:
                 return JsonResponse({"status":"failure to get data"},status=401) 
@@ -357,7 +371,11 @@ class RdvApiDetails(APIView):
         except ValueError:
             return JsonResponse({"status":"failure"},status=401)
 
+
 class importRdvApi(APIView):
+    token_param = openapi.Parameter('Authorization', in_=openapi.IN_HEADER ,description="Token for Auth" ,type=openapi.TYPE_STRING)
+
+    @swagger_auto_schema(manual_parameters=[token_param])
     def post(self,request):
         try:
             token = self.request.headers.__dict__['_store']['authorization'][1].split(' ')[1]
@@ -377,11 +395,25 @@ class importRdvApi(APIView):
 
         if role['user']['group'] != "Administrateur" :
             return JsonResponse({"status":"insufficient privileges"},status=401)
+            
+        """final_=[]
+        tmp={} 
+        try:
+            agents = requests.get(URLAGENT+"?paginated=t",headers={"Authorization":"Bearer "+token}).json()
+        except:
+            pass
+        for ag in agents:
+            tmp={
+                "user": ag['user']['id'],
+                "agent": ag['id']
+            }
+            final_.append(tmp)
+        #return JsonResponse({"ag":final_},status=200)"""
 
         try:
             #data = request.data
             file = {'fichier': request.FILES["fichier"]}
-            rdvs = requests.post(URLRDVIMPORT,files=file,data={"cible":3}).json()[0]
+            rdvs = requests.post(URLRDVIMPORT,files=file,data={"cible":3}).json() 
         except KeyError:
             return JsonResponse({"status":"failure to post data"}) 
         return Response(rdvs,status=status.HTTP_201_CREATED)
