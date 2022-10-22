@@ -167,6 +167,35 @@ def checkRole(token):
         return -1
     return user
 
+class getSingleUser(APIView):
+    token_param = openapi.Parameter('Authorization', in_=openapi.IN_HEADER ,description="Token for Auth" ,type=openapi.TYPE_STRING)
+    
+    @swagger_auto_schema(manual_parameters=[token_param])
+    def get(self,request,id):
+        try:
+            token = self.request.headers.__dict__['_store']['authorization'][1].split(' ')[1]
+        except KeyError:
+            return JsonResponse({"status":"not_logged"},status=401)
+
+        logged = controller(token)
+        test = isinstance(logged, list)
+        if not test:
+        #if "id" not in logged.keys():
+            return JsonResponse({"status":"not_logged"},status=401)
+
+        role = checkRole(token)
+        if role == -1:
+            return JsonResponse({"status":"No roles"},status=401) 
+
+        if role['user']['group'] != "Administrateur" and role['user']['group'] != "Agent constat" and role['user']['group'] != "Agent secteur" and role['user']['group'] != "Client pro" and role['user']['group'] != "Client particulier" and role['user']['group'] != "Salarie":
+            return JsonResponse({"status":"insufficient privileges"},status=401)
+
+        try:
+            us = requests.get(URLUSERS+str(id),params=request.query_params).json()[0]
+        except ValueError:
+            return JsonResponse({"status":"failure"},status=401)
+        return Response(us,status=status.HTTP_200_OK)
+
         
 
 

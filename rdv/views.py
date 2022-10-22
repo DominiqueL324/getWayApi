@@ -55,7 +55,7 @@ class RdvApi(APIView):
         if role == -1:
             return JsonResponse({"status":"No roles"},status=401) 
 
-        if role['user']['group'] != "Administrateur" and role['user']['group'] != "Agent constat" and role['user']['group'] != "Agent secteur" and role['user']['group'] != "Client pro" and role['user']['group'] != "Client particulier" and role['user']['group'] != "Salarie":
+        if role['user']['group'] != "Administrateur" and role['user']['group'] != "Agent constat" and role['user']['group'] != "Agent secteur" and role['user']['group'] != "Client pro" and role['user']['group'] != "Client particulier" and role['user']['group'] != "Salarie" and role['user']['group'] != "Audit planneur":
             return JsonResponse({"status":"insufficient privileges"},status=401)
 
         url_ = URLRDV
@@ -64,13 +64,16 @@ class RdvApi(APIView):
             url_ = url_+"?user="+str(role['id'])
         
         if role['user']['group'] == "Agent secteur":
-            url_ = url_+"?agent="+str(role['id'])
+            url_ = url_+"?agent="+str(role['user']['id'])
         
         if role['user']['group'] == "Agent constat":
-            url_ = url_+"?constat="+str(role['id'])
+            url_ = url_+"?constat="+str(role['user']['id'])
+
+        if role['user']['group'] == "Audit planneur":
+            url_ = url_+"?planneur="+str(role['user']['id'])
         
         if role['user']['group'] == "Salarie":
-            url_ = url_+"?passeur="+str(role['id'])
+            url_ = url_+"?passeur="+str(role['user']['id'])
 
         finaly_ ={}
         """if(request.GET.get("value",None) is not None):
@@ -196,7 +199,7 @@ class RdvApi(APIView):
             except KeyError:
                 return JsonResponse({"status":"failure to get response"})
             contenu = "Votre commande est enregistrée."
-            envoyerEmail("Création de compte",contenu,[rdv['client']['user']['email']],contenu) 
+            envoyerEmail("Création de commande",contenu,[rdv['client']['user']['email']],contenu) 
             final_.append(rdv)
         return Response(final_,status=status.HTTP_201_CREATED)
 
@@ -360,7 +363,7 @@ class RdvApiDetails(APIView):
         if role == -1:
             return JsonResponse({"status":"No roles"},status=401) 
 
-        if role['user']['group'] != "Administrateur" and role['user']['group'] != "Agent constat" and role['user']['group'] != "Agent secteur" and role['user']['group'] != "Client":
+        if role['user']['group'] != "Administrateur" and role['user']['group'] != "Agent constat" and role['user']['group'] != "Agent secteur" and role['user']['group'] != "Client pro" and role['user']['group'] != "Client particulier":
             return JsonResponse({"status":"insufficient privileges"},status=401)
 
         url_ = URLRDV
@@ -418,5 +421,76 @@ class importRdvApi(APIView):
             return JsonResponse({"status":"failure to post data"}) 
         return Response(rdvs,status=status.HTTP_201_CREATED)
 
+class commentaireApi(APIView):
+
+    token_param = openapi.Parameter('Authorization', in_=openapi.IN_HEADER ,description="Token for Auth" ,type=openapi.TYPE_STRING)
+    rdv = openapi.Parameter('rdv', in_=openapi.IN_QUERY ,description="Commentaires des RDV" ,type=openapi.TYPE_INTEGER)
+
+    @swagger_auto_schema(manual_parameters=[token_param,rdv])
+    def get(self,request):
+
+        try:
+            token = self.request.headers.__dict__['_store']['authorization'][1].split(' ')[1]
+        except KeyError:
+            return JsonResponse({"status":"not_logged"},status=401)
+
+        logged = controller(token)
+        test = isinstance(logged, list)
+        if not test:
+        #if "id" not in logged.keys():
+            return JsonResponse({"status":"not_logged"},status=401)
+
+        role = checkRole(token)
+        if role == -1:
+            return JsonResponse({"status":"No roles"},status=401) 
+
+        if role['user']['group'] != "Administrateur" and role['user']['group'] != "Agent constat" and role['user']['group'] != "Agent secteur" and role['user']['group'] != "Client pro" and role['user']['group'] != "Client particulier":
+            return JsonResponse({"status":"insufficient privileges"},status=401)
+
+        final_=[]
+        try:
+            comments = requests.get(URLALLCOMMENT,params=request.query_params).json()
+            for com in comments['comment']:
+                com['user'] = requests.get(URLUSERS+str(com["user_id"]),params=request.query_params).json()[0]
+                final_.append(com)
+            return Response(final_,status=status.HTTP_201_CREATED)
+        except ValueError:
+            return JsonResponse({"status":"failure"},status=401)
+            
+
+class documentAPI(APIView):
+
+    token_param = openapi.Parameter('Authorization', in_=openapi.IN_HEADER ,description="Token for Auth" ,type=openapi.TYPE_STRING)
+    rdv = openapi.Parameter('rdv', in_=openapi.IN_QUERY ,description="Commentaires des RDV" ,type=openapi.TYPE_INTEGER)
+
+    @swagger_auto_schema(manual_parameters=[token_param,rdv])
+    def get(self,request):
+
+        try:
+            token = self.request.headers.__dict__['_store']['authorization'][1].split(' ')[1]
+        except KeyError:
+            return JsonResponse({"status":"not_logged"},status=401)
+
+        logged = controller(token)
+        test = isinstance(logged, list)
+        if not test:
+        #if "id" not in logged.keys():
+            return JsonResponse({"status":"not_logged"},status=401)
+
+        role = checkRole(token)
+        if role == -1:
+            return JsonResponse({"status":"No roles"},status=401) 
+
+        if role['user']['group'] != "Administrateur" and role['user']['group'] != "Agent constat" and role['user']['group'] != "Agent secteur" and role['user']['group'] != "Client pro" and role['user']['group'] != "Client particulier":
+            return JsonResponse({"status":"insufficient privileges"},status=401)
+        final_=[]
+        try:
+            docs = requests.get(URLALLDOC,params=request.query_params).json()
+            for com in docs['comment']:
+                com['user'] = requests.get(URLUSERS+str(com["user_id"]),params=request.query_params).json()[0]
+                final_.append(com)
+            return Response(docs,status=status.HTTP_201_CREATED)
+        except ValueError:
+            return JsonResponse({"status":"failure"},status=401)
 
 

@@ -234,11 +234,15 @@ class UsersApi(APIView):
         if role == -1:
             return JsonResponse({"status":"No roles"},status=401) 
 
-        if role['user']['group'] != "Administrateur" and role['user']['group'] != "Agent secteur" and role['user']['group'] != "Agent constat" and role['user']['group'] != "Audit planneur":
+        if role['user']['group'] != "Administrateur" and role['user']['group'] != "Agent secteur" and role['user']['group'] != "Agent constat" and role['user']['group'] != "Audit planneur" and role['user']['group'] != "Client pro" and role['user']['group'] != "Client particulier":
             return JsonResponse({"status":"insufficient privilegies"},status=401) 
 
-        if role ['user']['group']  == "Agent secteur" or role['user']['group'] != "Agent constat" or role['user']['group'] != "Audit planneur":
+        if role ['user']['group']  == "Agent secteur" or role['user']['group'] == "Agent constat" or role['user']['group'] == "Audit planneur":
             url_ = url_+"?agent='vrai'"
+
+        if  role['user']['group'] == "Client pro" or  role['user']['group'] == "Client particulier":
+            url_ = url_+"?client="+str(role['user']['id'])
+
 
         try:
             users = requests.get(url_,params=request.query_params,headers={"Authorization":"Bearer "+token}).json() 
