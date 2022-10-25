@@ -444,7 +444,7 @@ class commentaireApi(APIView):
         if role == -1:
             return JsonResponse({"status":"No roles"},status=401) 
 
-        if role['user']['group'] != "Administrateur" and role['user']['group'] != "Agent constat" and role['user']['group'] != "Agent secteur" and role['user']['group'] != "Client pro" and role['user']['group'] != "Client particulier":
+        if role['user']['group'] != "Administrateur" and role['user']['group'] != "Audit planneur" and role['user']['group'] != "Agent constat" and role['user']['group'] != "Agent secteur" and role['user']['group'] != "Client pro" and role['user']['group'] != "Client particulier":
             return JsonResponse({"status":"insufficient privileges"},status=401)
 
         final_=[]
@@ -456,8 +456,33 @@ class commentaireApi(APIView):
             return Response(final_,status=status.HTTP_201_CREATED)
         except ValueError:
             return JsonResponse({"status":"failure"},status=401)
-            
+    
+    def post(self,request):
+        try:
+            token = self.request.headers.__dict__['_store']['authorization'][1].split(' ')[1]
+        except KeyError:
+            return JsonResponse({"status":"not_logged"},status=401)
 
+        logged = controller(token)
+        test = isinstance(logged, list)
+        if not test:
+        #if "id" not in logged.keys():
+            return JsonResponse({"status":"not_logged"},status=401)
+
+        role = checkRole(token)
+        if role == -1:
+            return JsonResponse({"status":"No roles"},status=401) 
+
+        if role['user']['group'] != "Administrateur" and role['user']['group'] != "Agent constat" and role['user']['group'] != "Agent secteur" and role['user']['group'] != "Client pro" and role['user']['group'] != "Client particulier":
+            return JsonResponse({"status":"insufficient privileges"},status=401)
+        #final_=[]
+        try:
+            comments = requests.post(URLADDCOMMENT,json=self.request.data,params=request.query_params,headers={"Authorization":"Bearer "+token}).json()
+            return Response(comments,status=status.HTTP_201_CREATED)
+        except ValueError:
+            return JsonResponse({"status":"failure"},status=401)
+
+            
 class documentAPI(APIView):
 
     token_param = openapi.Parameter('Authorization', in_=openapi.IN_HEADER ,description="Token for Auth" ,type=openapi.TYPE_STRING)
@@ -481,16 +506,98 @@ class documentAPI(APIView):
         if role == -1:
             return JsonResponse({"status":"No roles"},status=401) 
 
-        if role['user']['group'] != "Administrateur" and role['user']['group'] != "Agent constat" and role['user']['group'] != "Agent secteur" and role['user']['group'] != "Client pro" and role['user']['group'] != "Client particulier":
+        if role['user']['group'] != "Administrateur" and role['user']['group'] != "Audit planneur" and role['user']['group'] != "Agent constat" and role['user']['group'] != "Agent secteur" and role['user']['group'] != "Client pro" and role['user']['group'] != "Client particulier":
             return JsonResponse({"status":"insufficient privileges"},status=401)
         final_=[]
         try:
-            docs = requests.get(URLALLDOC,params=request.query_params).json()
+            
+            docs = requests.get(URLALLFILES,params=request.query_params).json()
             for com in docs['comment']:
                 com['user'] = requests.get(URLUSERS+str(com["user_id"]),params=request.query_params).json()[0]
                 final_.append(com)
             return Response(docs,status=status.HTTP_201_CREATED)
         except ValueError:
             return JsonResponse({"status":"failure"},status=401)
+
+    def post(self,request):
+        try:
+            token = self.request.headers.__dict__['_store']['authorization'][1].split(' ')[1]
+        except KeyError:
+            return JsonResponse({"status":"not_logged"},status=401)
+
+        logged = controller(token)
+        test = isinstance(logged, list)
+        if not test:
+        #if "id" not in logged.keys():
+            return JsonResponse({"status":"not_logged"},status=401)
+
+        role = checkRole(token)
+        if role == -1:
+            return JsonResponse({"status":"No roles"},status=401) 
+
+        if role['user']['group'] != "Administrateur" and role['user']['group'] != "Agent constat" and role['user']['group'] != "Agent secteur" and role['user']['group'] != "Client pro" and role['user']['group'] != "Client particulier":
+            return JsonResponse({"status":"insufficient privileges"},status=401)
+        #final_=[]
+        try:
+            file = {'fichier': request.FILES["fichier"]}
+            comments = requests.post(URLADDFILE,files=file,json=request.data,headers={"Authorization":"Bearer "+token}).json()
+            return Response(comments,status=status.HTTP_201_CREATED)
+        except ValueError:
+            return JsonResponse({"status":"failure"},status=401)
+
+class TriRdvApi(APIView):
+    token_param = openapi.Parameter('Authorization', in_=openapi.IN_HEADER ,description="Token for Auth" ,type=openapi.TYPE_STRING)
+    rdv = openapi.Parameter('rdv', in_=openapi.IN_QUERY ,description="Commentaires des RDV" ,type=openapi.TYPE_INTEGER)
+
+    @swagger_auto_schema(manual_parameters=[token_param,rdv])
+    def get(self,request):
+
+        try:
+            token = self.request.headers.__dict__['_store']['authorization'][1].split(' ')[1]
+        except KeyError:
+                return JsonResponse({"status":"not_logged"},status=401)
+
+        logged = controller(token)
+        test = isinstance(logged, list)
+        if not test:
+        #if "id" not in logged.keys():
+            return JsonResponse({"status":"not_logged"},status=401)
+
+        role = checkRole(token)
+        if role == -1:
+            return JsonResponse({"status":"No roles"},status=401) 
+
+        if role['user']['group'] != "Administrateur" and role['user']['group'] != "Audit planneur" and role['user']['group'] != "Agent constat" and role['user']['group'] != "Agent secteur" and role['user']['group'] != "Client pro" and role['user']['group'] != "Client particulier":
+            return JsonResponse({"status":"insufficient privileges"},status=401)
+        final_=[]
+        finaly_={}
+        try:
+            rdvs = requests.get(URLRDV,data=request.data,params=request.query_params)
+            for rdv in rdvs.json()['results']:
+                try:
+                    rdv['client'] = requests.get(URLCLIENT+str(rdv['client']),headers={"Authorization":"Bearer "+token}).json()[0]
+                    if rdv['agent'] is not None:
+                        id_f = str(rdv['agent']).split(".")[0]
+                        rdv['agent'] = requests.get(URLAGENT+str(id_f)+"?specific=t",headers={"Authorization":"Bearer "+token}).json()[0]
+                    if rdv['agent_constat'] is not None:
+                        id_f = str(rdv['agent_constat']).split(".")[0]
+                        rdv['agent_constat'] = requests.get(URLAGENT+str(id_f)+"?specific=t",headers={"Authorization":"Bearer "+token}).json()[0]
+                    if rdv['audit_planneur'] is not None:
+                        id_f = str(rdv['audit_planneur']).split(".")[0]
+                        rdv['audit_planneur'] = requests.get(URLAGENT+str(id_f)+"?specific=t",headers={"Authorization":"Bearer "+token}).json()[0]
+                    if rdv['passeur'] is not None:
+                        id_f = str(rdv['passeur']).split(".")[0]
+                        rdv['passeur'] = requests.get(URLSALARIE+str(id_f)+"?specific=t",headers={"Authorization":"Bearer "+token}).json()
+                except ValueError:
+                    return JsonResponse({"status":"failure"}) 
+                final_.append(rdv)
+            finaly_['count'] = rdvs.json()['count']
+            finaly_['next'] = rdvs.json()['next']
+            finaly_['previous'] = rdvs.json()['previous']
+            finaly_['results'] = final_
+            return Response(finaly_,status=status.HTTP_200_OK)
+        except ValueError:
+            return JsonResponse({"status":"failure"},status=401)
+
 
 

@@ -238,7 +238,7 @@ class UsersApi(APIView):
             return JsonResponse({"status":"insufficient privilegies"},status=401) 
 
         if role ['user']['group']  == "Agent secteur" or role['user']['group'] == "Agent constat" or role['user']['group'] == "Audit planneur":
-            url_ = url_+"?agent='vrai'"
+            url_ = url_+"?agent="+str(role['id'])
 
         if  role['user']['group'] == "Client pro" or  role['user']['group'] == "Client particulier":
             url_ = url_+"?client="+str(role['user']['id'])

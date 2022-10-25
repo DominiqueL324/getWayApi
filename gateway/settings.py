@@ -179,10 +179,14 @@ URLPROPRIETE = "http://127.0.0.1:7000/type_propriete_app/viewset/propriete/"
 URLINTERVENTION = "http://127.0.0.1:7000/intervention_app/viewset/intervention/"
 URLMANAGER = "http://127.0.0.1:8050/manager_app/viewset/role/?token="
 URLBACKUPPASS = "http://127.0.0.1:8050/manager_app/viewset/password/check/"
-URLALLDOC = "http://127.0.0.1:8025/all/document/"
+#URLALLDOC = "http://127.0.0.1:8025/all/document/"
 URLONEDOC = "http://127.0.0.1:8025/id/document/"
 URLALLCOMMENT = "http://127.0.0.1:8025/all/comment/"
+URLADDCOMMENT = "http://127.0.0.1:8025/make/comment/"
 URLONECOMMENT = "http://127.0.0.1:8025/id/comment/"
+URLALLFILES = "http://127.0.0.1:8025/all/document/"
+URLADDFILE = "http://127.0.0.1:8025/make/document/"
+
 
 #email setting 
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
