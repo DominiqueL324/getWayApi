@@ -186,6 +186,7 @@ URLADDCOMMENT = "http://127.0.0.1:8025/make/comment/"
 URLONECOMMENT = "http://127.0.0.1:8025/id/comment/"
 URLALLFILES = "http://127.0.0.1:8025/all/document/"
 URLADDFILE = "http://127.0.0.1:8025/make/document/"
+URLTRIAPP = "http://127.0.0.1:7000/tri_app/viewset/tri/"
 
 
 #email setting 

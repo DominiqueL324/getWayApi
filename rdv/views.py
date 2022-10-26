@@ -512,7 +512,7 @@ class documentAPI(APIView):
         try:
             
             docs = requests.get(URLALLFILES,params=request.query_params).json()
-            for com in docs['comment']:
+            for com in docs['document']:
                 com['user'] = requests.get(URLUSERS+str(com["user_id"]),params=request.query_params).json()[0]
                 final_.append(com)
             return Response(docs,status=status.HTTP_201_CREATED)
@@ -538,9 +538,10 @@ class documentAPI(APIView):
         if role['user']['group'] != "Administrateur" and role['user']['group'] != "Agent constat" and role['user']['group'] != "Agent secteur" and role['user']['group'] != "Client pro" and role['user']['group'] != "Client particulier":
             return JsonResponse({"status":"insufficient privileges"},status=401)
         #final_=[]
+        data = request.data
         try:
             file = {'fichier': request.FILES["fichier"]}
-            comments = requests.post(URLADDFILE,files=file,json=request.data,headers={"Authorization":"Bearer "+token}).json()
+            comments = requests.post(URLADDFILE,files=file,data={'user':data['user'],'type':data['type'],'rdv':data['rdv'],'comment':data['comment']},headers={"Authorization":"Bearer "+token}).json()
             return Response(comments,status=status.HTTP_201_CREATED)
         except ValueError:
             return JsonResponse({"status":"failure"},status=401)
@@ -572,7 +573,7 @@ class TriRdvApi(APIView):
         final_=[]
         finaly_={}
         try:
-            rdvs = requests.get(URLRDV,data=request.data,params=request.query_params)
+            rdvs = requests.get(URLTRIAPP,data=request.data,params=request.query_params)
             for rdv in rdvs.json()['results']:
                 try:
                     rdv['client'] = requests.get(URLCLIENT+str(rdv['client']),headers={"Authorization":"Bearer "+token}).json()[0]

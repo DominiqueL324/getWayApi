@@ -54,8 +54,8 @@ class AgentApi(APIView):
             return JsonResponse({"status":"insufficient privileges"},status=401)
         
         try:
-            clients = requests.get(URLAGENT,params=request.query_params,headers={"Authorization":"Bearer "+token}).json()
-            return Response(clients,status=200) 
+            agents = requests.get(URLAGENT,params=request.query_params,headers={"Authorization":"Bearer "+token}).json()
+            return Response(agents,status=200) 
         except ValueError:
             return JsonResponse({"status":"failure"},status=401) 
 
