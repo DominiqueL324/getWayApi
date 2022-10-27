@@ -13,7 +13,7 @@ def envoyerEmail(titre,text,liste_destinataire,contenu_html):
     return send_mail(
         titre,  #subject
         text, 
-        "saravincent@amexpert.biz",#from_mail
+        "noreply@amexpert.pro",#from_mail
         final_,  #recipient list []
         fail_silently=True,  #fail_silently
         html_message="<p>"+text+"</p>"

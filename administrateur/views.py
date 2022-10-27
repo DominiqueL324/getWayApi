@@ -76,12 +76,12 @@ class AdministrateurApi(APIView):
         manual_parameters=[token_param])
     def post(self,request):
 
-        try:
+        """try:
             token = self.request.headers.__dict__['_store']['authorization'][1].split(' ')[1]
         except KeyError:
-            return JsonResponse({"status":"not_logged"},status=401)
+            return JsonResponse({"status":"not_logged"},status=401)"""
 
-        logged = controller(token)
+        """logged = controller(token)
         test = isinstance(logged, list)
         if not test:
         #if "id" not in logged.keys():
@@ -93,10 +93,10 @@ class AdministrateurApi(APIView):
            return JsonResponse({"status":"No roles"},status=401) 
 
         if role['user']['group'] != "Administrateur":
-            return JsonResponse({"status":"insufficient privileges"},status=401)
+            return JsonResponse({"status":"insufficient privileges"},status=401)"""
         
         try:
-            administrateurs = requests.post(URLADMINISTRATEUR,headers={"Authorization":"Bearer "+token},data=self.request.data).json() 
+            administrateurs = requests.post(URLADMINISTRATEUR,data=self.request.data).json() 
             contenu = "Bienvenue,  M ou MME "
             contenu = contenu + administrateurs[0]['user']['nom']+" "+administrateurs[0]['user']['prenom']
             contenu = contenu + ", création de votre espace personnel. Cet espace vous permettra d'interagir avec vos clients et le centre de gestion."

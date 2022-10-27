@@ -196,6 +196,93 @@ class getSingleUser(APIView):
             return JsonResponse({"status":"failure"},status=401)
         return Response(us,status=status.HTTP_200_OK)
 
+class LoadState(APIView):
+    token_param = openapi.Parameter('Authorization', in_=openapi.IN_HEADER ,description="Token for Auth" ,type=openapi.TYPE_STRING)
+    
+    @swagger_auto_schema(manual_parameters=[token_param])
+    def get(self,request):
+        try:
+            token = self.request.headers.__dict__['_store']['authorization'][1].split(' ')[1]
+        except KeyError:
+            return JsonResponse({"status":"not_logged"},status=401)
+
+        logged = controller(token)
+        test = isinstance(logged, list)
+        if not test:
+        #if "id" not in logged.keys():
+            return JsonResponse({"status":"not_logged"},status=401)
+
+        role = checkRole(token)
+        if role == -1:
+            return JsonResponse({"status":"No roles"},status=401) 
+        url_ = URLRDV
+        try:
+            user = requests.get("http://127.0.0.1:8050/manager_app/viewset/role/?token="+token,headers={"Authorization":"Bearer "+token}).json()[0]
+            #récupération des RDV pour stat
+            if user['user']['group'] == "Agent secteur":
+                rdv = requests.get(url_+"?agentcount="+str(user['user']['id'])).json()
+                user['stats']['rdv'] = rdv["Rdv"]
+                user['stats']['rdv_attente'] = rdv["rdv_attente"]
+                user['stats']['rdv_valide'] = rdv["rdv_valide"]
+            
+            if user['user']['group'] == "Agent constat":
+                rdv = requests.get(url_+"?agentcountconst="+str(user['user']['id'])).json()
+                user['stats']['rdv'] = rdv["Rdv"]
+                user['stats']['rdv_attente'] = rdv["rdv_attente"]
+                user['stats']['rdv_valide'] = rdv["rdv_valide"]
+
+            if user['user']['group'] == "Client pro" or user['user']['group'] == "Client particulier":
+                rdv = requests.get(url_+"?clientcount="+str(user['id'])).json()
+                user['stats']['rdv'] = rdv["Rdv"]
+                user['stats']['rdv_attente'] = rdv["rdv_attente"]
+                user['stats']['rdv_valide'] = rdv["rdv_valide"]
+
+            if user['user']['group'] == "Administrateur":
+                rdv = requests.get(url_+"?admincount="+str(user['id'])).json()
+                user['stats']['rdv'] = rdv["Rdv"]
+                user['stats']['rdv_attente'] = rdv["rdv_attente"]
+                user['stats']['rdv_valide'] = rdv["rdv_valide"]
+            
+            if user['user']['group'] == "Salarie":
+                rdv = requests.get(url_+"?salariecount="+str(user['id'])).json()
+                user['stats']['rdv'] = rdv["Rdv"]
+                user['stats']['rdv_attente'] = rdv["rdv_attente"]
+                user['stats']['rdv_valide'] = rdv["rdv_valide"]
+
+            user['tokens']=token
+        except ValueError:
+            return JsonResponse({"status":"Faillure"},status=401)
+        return Response(user,status=status.HTTP_200_OK)
+
+
+class FiltreUser(APIView):
+
+    def get(self,request):
+        try:
+            token = self.request.headers.__dict__['_store']['authorization'][1].split(' ')[1]
+        except KeyError:
+            return JsonResponse({"status":"not_logged"},status=401)
+
+        logged = controller(token)
+        test = isinstance(logged, list)
+        if not test:
+        #if "id" not in logged.keys():
+            return JsonResponse({"status":"not_logged"},status=401)
+
+        role = checkRole(token)
+        if role == -1:
+            return JsonResponse({"status":"No roles"},status=401) 
+
+        if role['user']['group'] != "Administrateur" and role['user']['group'] != "Agent constat" and role['user']['group'] != "Agent secteur" and role['user']['group'] != "Client pro" and role['user']['group'] != "Client particulier" and role['user']['group'] != "Salarie":
+            return JsonResponse({"status":"insufficient privileges"},status=401)
+
+        try:
+            us = requests.get(URLUSERSFILTRE,params=request.query_params,headers={"Authorization":"Bearer "+token}).json()
+        except ValueError:
+            return JsonResponse({"status":"failure"},status=401)
+        return Response(us,status=status.HTTP_200_OK)
+
+
         
 
 

@@ -168,11 +168,14 @@ CORS_ALLOW_HEADERS = [
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
+URLEMAIL = "http://195.15.218.172/cmdplannif/mail/rdv/"
+
 URLSALARIE = "http://127.0.0.1:8050/salarie_app/viewset/salarie/"
 URLCLIENT = "http://127.0.0.1:8050/client_app/viewset/client/"
 URLAGENT = "http://127.0.0.1:8050/agent_app/viewset/agent/"
 URLADMINISTRATEUR = "http://127.0.0.1:8050/admin_app/viewset/administrateur/"
 URLUSERS = "http://127.0.0.1:8050/manager_app/viewset/users/"
+URLUSERSFILTRE = "http://127.0.0.1:8050/manager_app/viewset/filtre/"
 URLRDV = "http://127.0.0.1:7000/rdv_app/viewset/rdv/"
 URLRDVIMPORT = "http://127.0.0.1:7000/import_app/viewset/import/"
 URLPROPRIETE = "http://127.0.0.1:7000/type_propriete_app/viewset/propriete/"
@@ -192,7 +195,7 @@ URLTRIAPP = "http://127.0.0.1:7000/tri_app/viewset/tri/"
 #email setting 
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
 EMAIL_USE_TLS = True
-EMAIL_HOST = 'smtp.gmail.com'
-EMAIL_HOST_USER = 'saravincent@amexpert.biz'
-EMAIL_HOST_PASSWORD = 'Luc123!luc123!'
+EMAIL_HOST = 'mail.infomaniak.ch'
+EMAIL_HOST_USER = 'noreply@amexpert.pro'
+EMAIL_HOST_PASSWORD = 'TooR123$'
 EMAIL_PORT = 587

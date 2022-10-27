@@ -1,3 +1,4 @@
+from email import header
 from http import client
 import json
 from typing import final
@@ -198,9 +199,19 @@ class RdvApi(APIView):
                     rdv['passeur'] = requests.get(URLSALARIE+"?specific=t"+str(rdv['passeur']),headers={"Authorization":"Bearer "+token}).json()
             except KeyError:
                 return JsonResponse({"status":"failure to get response"})
-            contenu = "Votre commande est enregistrée."
-            envoyerEmail("Création de commande",contenu,[rdv['client']['user']['email']],contenu) 
+                
+            yourdate_ = datetime.strptime(rdv['date'],"%Y-%m-%dT%H:%M:%SZ")
+            mail = {
+                "client": rdv['client']['user']['nom']+" "+rdv['client']['user']['prenom'],
+                "status":"CREATION COMMANDE",
+                "intervention":rdv["intervention"]["type"],
+                "jour":str(yourdate_.day)+"/"+str(yourdate_.month)+"/"+str(yourdate_.year),
+                "users":[rdv['client']['user']['email'],rdv['agent']['user']['email'].split('/')[0]]
+            }
+            #contenu = "Votre commande est enregistrée."
+            #envoyerEmail("Création de commande",contenu,[rdv['client']['user']['email']],contenu) 
             final_.append(rdv)
+            requests.post(URLEMAIL,json=mail,params=self.request.query_params).json()
         return Response(final_,status=status.HTTP_201_CREATED)
 
                
@@ -326,6 +337,7 @@ class RdvApiDetails(APIView):
             return JsonResponse({"status":"failure to update data"},status=401) 
 
         rdvs = requests.get(URLRDV+str(rdvs['id']))
+        data = request.data
         try:
             for rdv in rdvs.json():
                 rdv['client'] = requests.get(URLCLIENT+str(rdv['client']),headers={"Authorization":"Bearer "+token}).json()[0]
@@ -342,8 +354,37 @@ class RdvApiDetails(APIView):
                     rdv['passeur'] = requests.get(URLSALARIE+"?specific=t"+str(rdv['passeur']),headers={"Authorization":"Bearer "+token}).json()
                 final_.append(rdv)
         except ValueError:
-                return JsonResponse({"status":"failure to get data"},status=401) 
-           
+                return JsonResponse({"status":"failure to get data"},status=401)
+        mail = {}
+        #Gestion des mails
+        yourdate_ = datetime.strptime(rdv['date'],"%Y-%m-%dT%H:%M:%SZ")
+        if request.POST.get("status",None) is not None:
+            if data['status'] == "CHANGEMENT DE STATUT":
+                mail['client'] = rdv['client']['user']['nom']+" "+rdv['client']['user']['prenom']
+                mail['status'] = data['status']
+                mail['intervention'] = rdv["intervention"]["type"]
+                mail['new'] = int(rdv["statut"])
+                mail['date'] = str(yourdate_.day)+"/"+str(yourdate_.month)+"/"+str(yourdate_.year)
+                mail['users'] = [rdv['client']['user']['email'].split('/')[0],rdv['agent']['user']['email'].split('/')[0]]
+
+            if data['status'] == "CONFIRMATION HORAIRES":
+                mail['client'] = rdv['client']['user']['nom']+" "+rdv['client']['user']['prenom']
+                mail['status'] = data['status']
+                mail['intervention'] = rdv["intervention"]["type"]
+                mail['date'] = str(yourdate_.day)+"/"+str(yourdate_.month)+"/"+str(yourdate_.year)
+                mail['heure'] = str(yourdate_.hour)+"H"+str(yourdate_.min)
+                mail['users'] = [rdv['client']['user']['email'],rdv['agent']['user']['email'].split('/')[0]]
+
+            if data['status'] == "AFFECTATION AGENT SECTEUR":
+                mail['client'] = rdv['client']['user']['nom']+" "+rdv['client']['user']['prenom']
+                mail['status'] = data['status']
+                mail['intervention'] = rdv["intervention"]["type"]
+                mail['date'] = str(yourdate_.day)+"/"+str(yourdate_.month)+"/"+str(yourdate_.year)
+                mail['agent1'] = rdv['agent_constat']['user']['nom']+" "+rdv['agent_constat']['user']['prenom'] 
+                mail['agent2'] = rdv['audit_planneur']['user']['nom']+" "+rdv['audit_planneur']['user']['prenom']  
+                mail['users'] = [rdv['audit_planneur']['user']['email'].split('/')[0],rdv['agent_constat']['user']['email'].split('/')[0],rdv['client']['user']['email'],rdv['agent']['user']['email'].split('/')[0]]
+
+        requests.post(URLEMAIL,json=mail,params=self.request.query_params).json()
         return Response(final_,status=status.HTTP_201_CREATED)
 
     @swagger_auto_schema(manual_parameters=[token_param])
@@ -448,12 +489,13 @@ class commentaireApi(APIView):
             return JsonResponse({"status":"insufficient privileges"},status=401)
 
         final_=[]
+        data = request.data
         try:
             comments = requests.get(URLALLCOMMENT,params=request.query_params).json()
             for com in comments['comment']:
                 com['user'] = requests.get(URLUSERS+str(com["user_id"]),params=request.query_params).json()[0]
                 final_.append(com)
-            return Response(final_,status=status.HTTP_201_CREATED)
+            
         except ValueError:
             return JsonResponse({"status":"failure"},status=401)
     
@@ -476,11 +518,54 @@ class commentaireApi(APIView):
         if role['user']['group'] != "Administrateur" and role['user']['group'] != "Agent constat" and role['user']['group'] != "Agent secteur" and role['user']['group'] != "Client pro" and role['user']['group'] != "Client particulier":
             return JsonResponse({"status":"insufficient privileges"},status=401)
         #final_=[]
+        data=request.data
         try:
+            #var = 10
+            #pass
             comments = requests.post(URLADDCOMMENT,json=self.request.data,params=request.query_params,headers={"Authorization":"Bearer "+token}).json()
-            return Response(comments,status=status.HTTP_201_CREATED)
+            #return Response(comments,status=status.HTTP_201_CREATED)
         except ValueError:
+            #pass
             return JsonResponse({"status":"failure"},status=401)
+        url_ = URLRDV
+        url_ = URLRDV+str(data['rdv'])
+        rdvs = requests.get(url_,params=self.request.query_params)
+
+        try:
+            for rdv in rdvs.json():
+                rdv['client'] = requests.get(URLCLIENT+str(rdv['client']),headers={"Authorization":"Bearer "+token}).json()[0]
+                if rdv['agent'] is not None:
+                    id_f = str(rdv['agent']).split(".")[0]
+                    rdv['agent'] = requests.get(URLAGENT+str(id_f)+"?specific=t",headers={"Authorization":"Bearer "+token}).json()[0]
+                if rdv['agent_constat'] is not None:
+                    id_f = str(rdv['agent_constat']).split(".")[0]
+                    rdv['agent_constat'] = requests.get(URLAGENT+str(id_f)+"?specific=t",headers={"Authorization":"Bearer "+token}).json()[0]
+                if rdv['audit_planneur'] is not None:
+                    id_f = str(rdv['audit_planneur']).split(".")[0]
+                    rdv['audit_planneur'] = requests.get(URLAGENT+str(id_f)+"?specific=t",headers={"Authorization":"Bearer "+token}).json()[0]
+                if rdv['passeur'] is not None:
+                    id_f = str(rdv['passeur']).split(".")[0]
+                    rdv['passeur'] = requests.get(URLSALARIE+str(id_f)+"?specific=t",headers={"Authorization":"Bearer "+token}).json()
+            
+            yourdate_ = datetime.strptime(rdv['date'],"%Y-%m-%dT%H:%M:%SZ")
+            liste_gar = [rdv['client']['user']['email'],rdv['agent']['user']['email'].split('/')[0],]
+            mail = {
+                "client": rdv['client']['user']['nom']+" "+rdv['client']['user']['prenom'],
+                "status":"COMMENT",
+                "type":rdv["intervention"]["type"],
+                "date":str(yourdate_.day)+"/"+str(yourdate_.month)+"/"+str(yourdate_.year),
+            }
+            if rdv["agent_constat"] is not None:
+                liste_gar.append(rdv['agent_constat']['user']['email'].split('/')[0]) 
+            
+            if rdv["audit_planneur"] is not None:
+                liste_gar.append(rdv['audit_planneur']['user']['email'].split('/')[0]) 
+            mail['users'] = liste_gar
+            
+            requests.post(URLEMAIL,json=mail,params=self.request.query_params).json()
+        except ValueError:
+                return JsonResponse({"status":"failure"},status=401) 
+        return Response(mail,status=status.HTTP_201_CREATED)
 
             
 class documentAPI(APIView):
@@ -542,9 +627,49 @@ class documentAPI(APIView):
         try:
             file = {'fichier': request.FILES["fichier"]}
             comments = requests.post(URLADDFILE,files=file,data={'user':data['user'],'type':data['type'],'rdv':data['rdv'],'comment':data['comment']},headers={"Authorization":"Bearer "+token}).json()
-            return Response(comments,status=status.HTTP_201_CREATED)
+            #return Response(comments,status=status.HTTP_201_CREATED)
         except ValueError:
             return JsonResponse({"status":"failure"},status=401)
+
+        url_ = URLRDV
+        url_ = URLRDV+str(data['rdv'])
+        rdvs = requests.get(url_,params=self.request.query_params)
+
+        try:
+            for rdv in rdvs.json():
+                rdv['client'] = requests.get(URLCLIENT+str(rdv['client']),headers={"Authorization":"Bearer "+token}).json()[0]
+                if rdv['agent'] is not None:
+                    id_f = str(rdv['agent']).split(".")[0]
+                    rdv['agent'] = requests.get(URLAGENT+str(id_f)+"?specific=t",headers={"Authorization":"Bearer "+token}).json()[0]
+                if rdv['agent_constat'] is not None:
+                    id_f = str(rdv['agent_constat']).split(".")[0]
+                    rdv['agent_constat'] = requests.get(URLAGENT+str(id_f)+"?specific=t",headers={"Authorization":"Bearer "+token}).json()[0]
+                if rdv['audit_planneur'] is not None:
+                    id_f = str(rdv['audit_planneur']).split(".")[0]
+                    rdv['audit_planneur'] = requests.get(URLAGENT+str(id_f)+"?specific=t",headers={"Authorization":"Bearer "+token}).json()[0]
+                if rdv['passeur'] is not None:
+                    id_f = str(rdv['passeur']).split(".")[0]
+                    rdv['passeur'] = requests.get(URLSALARIE+str(id_f)+"?specific=t",headers={"Authorization":"Bearer "+token}).json()
+            
+            yourdate_ = datetime.strptime(rdv['date'],"%Y-%m-%dT%H:%M:%SZ")
+            liste_gar = [rdv['client']['user']['email'],rdv['agent']['user']['email'].split('/')[0],]
+            mail = {
+                "client": rdv['client']['user']['nom']+" "+rdv['client']['user']['prenom'],
+                "status":"DOCUMENT",
+                "type":rdv["intervention"]["type"],
+                "date":str(yourdate_.day)+"/"+str(yourdate_.month)+"/"+str(yourdate_.year),
+            }
+            if rdv["agent_constat"] is not None:
+                liste_gar.append(rdv['agent_constat']['user']['email'].split('/')[0]) 
+            
+            if rdv["audit_planneur"] is not None:
+                liste_gar.append(rdv['audit_planneur']['user']['email'].split('/')[0]) 
+            mail['users'] = liste_gar
+
+            requests.post(URLEMAIL,json=mail,params=self.request.query_params).json()
+        except ValueError:
+                return JsonResponse({"status":"failure"},status=401) 
+        return Response(mail,status=status.HTTP_201_CREATED)
 
 class TriRdvApi(APIView):
     token_param = openapi.Parameter('Authorization', in_=openapi.IN_HEADER ,description="Token for Auth" ,type=openapi.TYPE_STRING)
